@@ -2,21 +2,21 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Function to read the CSV file
+# Fonction pour lire le fichier CSV
 def read_csv(file_path):
     return pd.read_csv(file_path)
 
-# Function to calculate similarity and add columns
+# Fonction pour calculer la similarité et ajouter des colonnes
 def add_similarity_columns(df):
-    keywords = df.iloc[:, 1].tolist()  # Use the second column for keywords
+    keywords = df.iloc[:, 1].tolist()  # Utiliser la deuxième colonne pour les mots-clés
 
-    # Vectorization
+    # Vectorisation
     vectorizer = TfidfVectorizer().fit_transform(keywords)
     vectors = vectorizer.toarray()
     cosine_sim_matrix = cosine_similarity(vectors)
 
-    # Create columns for similar keywords and scores
-    num_similar = 5  # Maximum number of similar keywords to display per keyword
+    # Créer des colonnes pour les mots-clés similaires et les scores
+    num_similar = 5  # Nombre maximum de mots-clés similaires à afficher par mot-clé
     for n in range(1, num_similar + 1):
         df[f'Similar Keyword {n}'] = ''
         df[f'Similarity Score {n}'] = ''
@@ -28,32 +28,32 @@ def add_similarity_columns(df):
             if i != j and cosine_sim_matrix[i][j] > 0:
                 similar_pairs.append((keywords[j], cosine_sim_matrix[i][j]))
 
-        # Sort pairs by descending score
+        # Trier les paires par score décroissant
         similar_pairs = sorted(similar_pairs, key=lambda x: x[1], reverse=True)
 
-        # Add similar keywords and scores to the appropriate columns
+        # Ajouter les mots-clés similaires et les scores dans les colonnes appropriées
         for n in range(min(num_similar, len(similar_pairs))):
             df.at[i, f'Similar Keyword {n+1}'] = similar_pairs[n][0]
             df.at[i, f'Similarity Score {n+1}'] = similar_pairs[n][1]
 
     return df
 
-# Function to write the modified DataFrame to a CSV file
+# Fonction pour écrire le DataFrame modifié dans un fichier CSV
 def write_csv(df, output_file_path):
     df.to_csv(output_file_path, index=False)
 
-# Paths for input and output files
-input_file_path = 'motsclessimilarity.csv'  # Replace with your file path (copy paste path)
-output_file_path = 'motsclessimilarity-export.csv'  # Replace with your output path
+# Chemins pour les fichiers d'entrée et de sortie
+input_file_path = 'motsclessimilarity.csv'  # Remplacez par votre chemin de fichier (copier-coller le chemin)
+output_file_path = 'motsclessimilarity-export.csv'  # Remplacez par votre chemin de sortie
 
-# Read the CSV file
+# Lire le fichier CSV
 df = read_csv(input_file_path)
 
-# Add similarity columns
+# Ajouter des colonnes de similarité
 df = add_similarity_columns(df)
 
-# Write the modified DataFrame to a new CSV file
+# Écrire le DataFrame modifié dans un nouveau fichier CSV
 write_csv(df, output_file_path)
 
-# Display the modified DataFrame (optional)
+# Afficher le DataFrame modifié (optionnel)
 df
